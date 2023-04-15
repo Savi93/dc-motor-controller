@@ -7,10 +7,10 @@ from % to bits.
 
 A mosfet was placed as intermediate device between microcontroller and motor in order to deal with the current limitations of the output ports of the Atmega.
 
-´Extra´
+´´Extra´´
 The implementation was successfully tested with SimulIde simulation environment.
 
-#Technologies used: C, Atmega2560 µC, PWM
+# Technologies used: C, Atmega2560 µC, PWM
 ![Alt text](PWM_motor_controller.png)
 
 
