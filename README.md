@@ -1,6 +1,6 @@
-# KURVAR
+# DC motor controller with Atmega2560
 
-Tre dsfsdf sdfsdfsdf was developed for the Atmega2560 µC and permits the control of a DC motor through two different pushbuttons (used to increment or decrement the rpm of the electro-mechanic device). 
+The firmware was developed for the Atmega2560 µC and permits the control of a DC motor through two different pushbuttons (used to increment or decrement the rpm of the electro-mechanic device). 
 
 The methodology of management is by adopting a PWM wave with resolution 2^10bits; however the scaling was done in order to have a mapping
 from % to bits.
