@@ -1,4 +1,4 @@
-## DC motor controller with Atmega2560
+# DC motor controller with Atmega2560
 
 The firmware was developed for the Atmega2560 µC and permits the control of a DC motor through two different pushbuttons (used to increment or decrement the rpm of the electro-mechanic device). 
 
@@ -7,10 +7,10 @@ from % to bits.
 
 A mosfet was placed as intermediate device between microcontroller and motor in order to deal with the current limitations of the output ports of the Atmega.
 
-´´Extra´´
+! Extra's
 The implementation was successfully tested with SimulIde simulation environment.
 
-# Technologies used: C, Atmega2560 µC, PWM
+## Technologies used: C, Atmega2560 µC, PWM
 ![Alt text](PWM_motor_controller.png)
 
 
