@@ -8,5 +8,5 @@ A mosfet was placed as intermediate device between microcontroller and motor in 
 **Extra**
 The implementation was successfully tested with SimulIde.
 
-![alt text](PWM motor controller.png)
+![Alt text](PWM_motor_controller.png)
 
