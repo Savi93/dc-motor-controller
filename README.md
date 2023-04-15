@@ -4,7 +4,13 @@ The following firmware was developed for an Atmega2560 µC (Atmel) by using the 
 
 The methodology of management was done by adopting the "Fast PWM" control technique with resolution 2^10bits (0-1023 steps).
 This means that a digital output pin was configured to act in a switching mode to properly control the motor.
-The scaling was however changed in order to have a proper association of one physical click of the pushbutton to a percentage value going from 0 (motor OFF) to 100% (max speed).
+The scaling was however changed in order to have a proper association of one physical click of the pushbutton to a percentage value going from 0 (motor OFF) to 100% (max speed).<br>
+```c
+#define TOP_VAL 1023
+//OTHER CODE
+uint16_t res = 0;
+res = ((TOP_VAL / 100.0)) * duty;
+``` 
 
 A mosfet transistor was placed as intermediate component between microcontroller and motor in order to deal with the current limitations of the output ports of the Atmega.
 
