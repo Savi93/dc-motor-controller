@@ -1,6 +1,5 @@
 /*
  * Fast_PWM.c
- *
  * Created: 09/03/2022 20:28:33
  * Author : Savii
  */ 
