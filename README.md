@@ -17,7 +17,7 @@ An H-Bridge composed by 4 mosfet was placed as intermediate component between mi
 **Extra's**: The implementation was successfully tested with SimulIde simulation environment.
 
 ## Technologies used: C, Atmega2560 µC, PWM wave, embedded systems
-![Alt text](PWM_motor_controller.png)
+![Alt text](PWM_motor_control.png)
 
 
 
