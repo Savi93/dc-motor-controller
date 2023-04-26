@@ -4,7 +4,7 @@ The following firmware was developed for an Atmega2560 µC (Atmel - AVR architec
 
 The methodology of management was done by adopting the "Fast PWM" control technique with resolution 2^10bits (0-1023 steps).
 This means that two different digital output pins (PB5 and PB6) were configured to act as PWM waves to properly control the motor according to the requested rotation speed.
-The output steps were however scaled in order to have a proper association of the physical clicks of the pushbuttons with a percentage value ranging from 0 (motor OFF) to 100% (max speed); each step is hence increasing/decreasing the previous count value by int(10.23). <br>
+The output steps were however scaled in order to have a proper association of the physical clicks of the pushbuttons with a δ -duty cycle- ranging from 0 (motor OFF) to 100% (max speed); each step is hence increasing/decreasing the previous count value by int(10.23). <br>
 ```c
 #define TOP_VAL 1023
 //OTHER CODE
