@@ -23,26 +23,40 @@ volatile uint8_t* MEM_PINB = (uint8_t*) (0x23);
 volatile uint8_t count = 0;
 volatile uint8_t direct = RIGHT;
 
-inline uint16_t dutyToCount(uint8_t duty)
+//Union created to avoid shift (>>) operations
+typedef union 
 {
-	uint16_t res = 0;
-	res = ((TOP_VAL / 100.0)) * duty;
-	return res;
+	uint16_t FULLREG;
+	
+	struct 
+	{
+		uint8_t LOWREG;	
+		uint8_t HIGHREG;
+	};
+} DUTYTOCOUNTREG;
+
+inline void dutyToCount(uint8_t duty, DUTYTOCOUNTREG* res)
+{
+	(*res).FULLREG = ((TOP_VAL / 100.0)) * duty;
 }
 
 inline void updateDuty(uint8_t duty)
 {
+	DUTYTOCOUNTREG res;
+	
+	dutyToCount(duty, &res);
+	
 	if(duty <= 100)
 	{
 		switch(direct)
 		{
 			case RIGHT:
-				OCR1AL = (duty > 0) ? dutyToCount(duty) : 0;
-				OCR1AH = (duty > 0) ? dutyToCount(duty) >> 8 : 0;
+				OCR1AL = (duty > 0) ? res.LOWREG : 0;
+				OCR1AH = (duty > 0) ? res.HIGHREG : 0;
 				break;
 			case LEFT:
-				OCR1BL = (duty > 0) ? dutyToCount(duty) : 0;
-				OCR1BH = (duty > 0) ? dutyToCount(duty) >> 8 : 0;
+				OCR1BL = (duty > 0) ? res.LOWREG : 0;
+				OCR1BH = (duty > 0) ? res.HIGHREG : 0;
 				break;
 			default:
 				break;
@@ -67,7 +81,7 @@ inline void stopPWMTimer()
 	TCNT1H = 0x00; //Reset count value
 	TCNT1L = 0x00; //Reset count value
 	updateDuty(0); //Reset PWM duty
-	_delay_ms(1); //Delay needed to reset permit the clear on compare match operation
+	_delay_ms(1); //Delay needed to permit the reaching of the clear on compare match operation
 	TCCR1B &= 0x00; //Prescaler = 0; stop timer
 	TCCR1A &= 0x00;
 	TIMSK1 &= 0x00; //Disable timer interrupts
@@ -99,23 +113,29 @@ ISR(PCINT0_vect)
 		
 		stopPWMTimer();
 		direct = TOGGLE(direct);
-		
 		startPWMTimer();
 	}
 	
 	*(MEM_PORTB) &= 0b01100111;
-	*(MEM_PORTB) |= (direct == RIGHT) ? 0b00001000 : 0b00010000;
+	*(MEM_PORTB) |= (direct == RIGHT) ?  0b00010000 : 0b00001000;
 }
 
 int main()
 {
+	//Array of function pointers used to call the two functions.
+	void (*fncPoint[2]) () = {&initButtonsINT, &startPWMTimer};
+	
 	*(MEM_PORTB) |= 0b00000111; //Enable pull-up resistors on PB0, PB1, PB2
 	*(MEM_DDRB) |= 0b00011000; //PB3 and PB4 enabled as output
 	
-	initButtonsINT();
-	startPWMTimer();
+	fncPoint[0]();
+	fncPoint[1]();
 	
-	*(MEM_PORTB) |= (direct == RIGHT) ? 0b00001000 : 0b00010000; //Initialize first rotation signalization LED
+	//Previous is the same as:
+	//initButtonsINT();
+	//startPWMTimer();
+	
+	*(MEM_PORTB) |= (direct == RIGHT) ? 0b00010000 : 0b00001000; //Initialize first rotation signalization LED
 	
 	sei();
 	
