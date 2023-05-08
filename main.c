@@ -5,10 +5,10 @@
  * Author : Savii
  */ 
 
-#define F_CPU 16000000
+#define F_CPU 16000000U
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/sleep.h>
 #include <util/delay.h>
 
 #define TOP_VAL 1023.0
@@ -37,7 +37,8 @@ typedef union
 
 inline void dutyToCount(uint8_t duty, DUTYTOCOUNTREG* res)
 {
-	(*res).FULLREG = ((TOP_VAL / 100.0)) * duty;
+	//Same as performing / -> (TOP_VAL / 100.0) -> (1023 / 100.0); avoid usage of division
+	(*res).FULLREG = (10.23) * duty;
 }
 
 inline void updateDuty(uint8_t duty)
@@ -51,12 +52,12 @@ inline void updateDuty(uint8_t duty)
 		switch(direct)
 		{
 			case RIGHT:
-				OCR1AL = (duty > 0) ? res.LOWREG : 0;
-				OCR1AH = (duty > 0) ? res.HIGHREG : 0;
+				OCR1AL = res.LOWREG;
+				OCR1AH = res.HIGHREG;
 				break;
 			case LEFT:
-				OCR1BL = (duty > 0) ? res.LOWREG : 0;
-				OCR1BH = (duty > 0) ? res.HIGHREG : 0;
+				OCR1BL = res.LOWREG;
+				OCR1BH = res.HIGHREG;
 				break;
 			default:
 				break;
@@ -66,25 +67,27 @@ inline void updateDuty(uint8_t duty)
 
 inline void startPWMTimer()
 { 
+	updateDuty(count); //Set PWM duty = 0
 	TCNT1L = 0x00;
 	TCNT1H = 0x00;
 	TCCR1A = (direct == RIGHT) ? (1<<COM1A1) : (1<<COM1B1); //Clear on compare match, set at BOTTOM
-	TCCR1B |= (1<<CS11); //CLK prescaler division by 8; 16M / 8 = 2M; PWM signal = 2M / 1024 = 1953,125Hz
+	TCCR1B |= (1<<CS10) | (1<<CS11); //CLK prescaler division by 64; 16M / 64 = 250k; PWM signal = 250k / 1024 = 244Hz
 	TCCR1A |= (1<<WGM10) | (1<<WGM11);
 	TCCR1B |= (1<<WGM12); //This operation and the previous selects FAST PWM with resolution 10bits (1023 is TOP val)
-	updateDuty(0); //Set PWM duty = 0
 	TIMSK1 = (1<<TOIE1); //Enable timer overflow interrupt
 }
 
-inline void stopPWMTimer()
-{
-	TCNT1H = 0x00; //Reset count value
-	TCNT1L = 0x00; //Reset count value
-	updateDuty(0); //Reset PWM duty
-	_delay_ms(1); //Delay needed to permit the reaching of the clear on compare match operation
-	TCCR1B &= 0x00; //Prescaler = 0; stop timer
-	TCCR1A &= 0x00;
-	TIMSK1 &= 0x00; //Disable timer interrupts
+static inline void stopPWMTimer()
+{	
+	updateDuty(count);
+	updateDuty(count);
+	//Delay empirically estimated to give enough time to update the compare value .... ??
+	_delay_ms(20);
+	TCNT1L = 0x00;
+	TCNT1H = 0x00;
+	TCCR1A = 0x00;
+	TCCR1B = 0x00;
+	TIMSK1 = 0x00;
 }
 
 inline void initButtonsINT()
@@ -110,14 +113,10 @@ ISR(PCINT0_vect)
 	else if((*(MEM_PINB) & 0x04) == 0)
 	{
 		count = 0;
-		
 		stopPWMTimer();
-		direct = TOGGLE(direct);
+		direct = (direct == RIGHT) ? LEFT : RIGHT;
 		startPWMTimer();
 	}
-	
-	*(MEM_PORTB) &= 0b01100111;
-	*(MEM_PORTB) |= (direct == RIGHT) ?  0b00010000 : 0b00001000;
 }
 
 int main()
@@ -125,8 +124,9 @@ int main()
 	//Array of function pointers used to call the two functions.
 	void (*fncPoint[2]) () = {&initButtonsINT, &startPWMTimer};
 	
+	*(MEM_DDRB) |= 0b01111000; //PB3 and PB4 enabled as output; PB5 and PB6 used as control pins for the motor
 	*(MEM_PORTB) |= 0b00000111; //Enable pull-up resistors on PB0, PB1, PB2
-	*(MEM_DDRB) |= 0b00011000; //PB3 and PB4 enabled as output
+	DDRD |= 0xFF; //Enable PORTD as output
 	
 	fncPoint[0]();
 	fncPoint[1]();
@@ -136,13 +136,27 @@ int main()
 	//startPWMTimer();
 	
 	*(MEM_PORTB) |= (direct == RIGHT) ? 0b00010000 : 0b00001000; //Initialize first rotation signalization LED
-	
 	sei();
 	
     /* Replace with your application code */
     while(1) 
     {
+		//Hundreds-related display; set to "1" in case of count == 100, OE PB7 is active low
+		PORTD = 0b01100000;
+		PORTD |= (count == 100) ? 0x01 : 0x00;
+		_delay_ms(20);
+		//Tens-related display; set to value 100 / 10, OE PB6 is active low
+		PORTD = 0b10100000;
+		PORTD |= (count < 100) ? ((uint16_t)count * 205) >> 11 : 0; //Divide by 10 
+		_delay_ms(20);
+		//Units-related display; set to value 100 modulo 10, OE PB5 is active low
+		PORTD = 0b11000000;
+		PORTD |= count % 10;
+		_delay_ms(20);
 		
+		//Update of rotation signalization LEDs
+		*(MEM_PORTB) &= 0b01100111;
+		*(MEM_PORTB) |= (direct == RIGHT) ?  0b00010000 : 0b00001000;
     }
 }
 

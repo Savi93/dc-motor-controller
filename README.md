@@ -11,13 +11,13 @@ The output steps were however scaled in order to have a proper association of th
 uint16_t res = 0;
 res = ((TOP_VAL / 100.0)) * duty;
 ``` 
-
 An H-Bridge composed by 4 mosfet was placed as intermediate component between microcontroller and motor in order to deal with the current limitations of the output ports of the Atmega and to correctly manage the current flow through the device.
+Moreover, three 7 displays were also provided within the circuit in order to visualize the current duty cycle value - a proper multiplexing was however implemented on the "OE - Output Enable" pins in order to reduce wires and physical microcontroller resources.
 
 **Extra's**: The implementation was successfully tested with SimulIde simulation environment.
 
 ## Technologies used: C, Atmega2560 µC, PWM wave, embedded systems
-![Alt text](PWM_motor_controller.png)
+![Alt text](PWM_motor_control.png)
 
 
 
