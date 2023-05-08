@@ -145,11 +145,11 @@ int main()
 		PORTD = 0b01100000;
 		PORTD |= (count == 100) ? 0x01 : 0x00;
 		_delay_ms(20);
-		//Tens-related display; set to value 100 / 10, OE PB6 is active low
+		//Tens-related display; set to value (count / 10) or 0 depending on count value, OE PB6 is active low
 		PORTD = 0b10100000;
 		PORTD |= (count < 100) ? ((uint16_t)count * 205) >> 11 : 0; //Divide by 10 
 		_delay_ms(20);
-		//Units-related display; set to value 100 modulo 10, OE PB5 is active low
+		//Units-related display; set to value count modulo 10, OE PB5 is active low
 		PORTD = 0b11000000;
 		PORTD |= count % 10;
 		_delay_ms(20);
