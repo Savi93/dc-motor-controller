@@ -12,7 +12,7 @@ uint16_t res = 0;
 res = ((TOP_VAL / 100.0)) * duty;
 ``` 
 An H-Bridge composed by 4 mosfet was placed as intermediate component between microcontroller and motor in order to deal with the current limitations of the output ports of the Atmega and to correctly manage the current flow through the device. <br>
-Moreover, three 7 segment displays were also provided within the circuit in order to visualize the current duty cycle value - a proper multiplexing was however implemented on the "OE - Output Enable" pins in order to reduce wires and physical microcontroller resources.
+Moreover, three 7 segment displays were also provided within the circuit in order to visualize the current duty cycle value - a proper multiplexing was hence implemented on the "OE - Output Enable" pins in order to reduce the total number of wires, such as physical microcontroller resources.
 
 **Extra's**: The implementation was successfully tested with SimulIde simulation environment.
 
